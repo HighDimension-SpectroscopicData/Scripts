@@ -1,0 +1,96 @@
+---
+title: "Summary"
+author: "Anjali Gupta"
+date: "4/16/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Random Projections
+
+We use 10-dimensional ALR transformed (wrt Si) ICP-MS data for this study. Our aim is to compare the data collected for the objects of interest. 
+
+There are 3 datasets - 
+
+1. Train data 
+ - Number of objects = 659
+ - Number of replications = 3
+
+2. Control data
+ - Number of objects = 320
+ - Number of replications = 3
+
+3. Recovered data
+ - Number of objects = 320
+ - Number of replications = 2
+
+We use Train data as background data to estimate the within and between objects variance-covariance matrices. We use the estimated variance-covariance matrices to conduct comparisons between the control and recovered datasets.
+
+There are two types of comparisons that are conducted here, namely, comparisons between observations recorded for the same object, and comparisons between different objects. These comparisons are made using the LR MVN formula given by Aitken and Lucy [2004]. Instead of using the 10-dimensional data as is, we project this 10-dimensional data on a 3-dimensional Gaussian random projection plane and use these derived 3-dimensional projections as input for LR formula.
+Randomly projecting the data has several advantages - 
+
+1. Computationally very efficient
+
+2. Number of parameters to be estimated is way less for 3-dimensional data as compared to 10-dimensional data
+
+3. No dependency on any data distribution
+
+We repeat this procedure 100 times, i.e. 100 different projections for the same 10-dimensional data, and compute LRs 100 times for each iteration separately.
+
+### Combining results of 100 Random Projections
+
+#### Arithmetic Mean - 
+For each comparison, we calculated arithmetic mean of LRs for 100 random projections. False negative error rate was found to be 0% (most of the time), but false positive error rate was seen to increase as the number of random projections were increased from 1 to 100 (1, 5, 20, 50, 100).
+
+Comparison between different objects - Single RP gave about 2% cases (out of a total of 51040) where LR.different.Nor > 1. Even though, about 98% LRs were found to be between 0 and 1, the remaining 2% had the maximum value upto about 2x10^(6). Essentially, the computed LRs for different RPs were volatile.
+As we increased the number of RPs, and calculated their arithmetic means, the false positive error rate started to rise.
+
+ - Five Random Projections - False positive error rate = 3.7%
+
+ - Fifty Random Projections - False positive error rate = 11.4%
+
+ - Hundred Random Projections - False positive error rate = 16% and so on.
+
+The extreme values of LR.different.Nor influenced the Arithmetic Mean to an extent that even if 98% of the iterations gave LRs between 0 and 1, the remaining 2% cases moved their means over 1, leading to higher error rates. If most of the computed LRs were very close to zero, implying very strong evidence against prosecution statement, and few of the LRs > 1 (evidence in favour of prosecution model), the arithmetic mean of LRs was found to be greater than 1.
+
+For instance - 10 Random projections
+
+ - LRs = 5, 9, 5x10^(-06), 4x10^(-06), 1x10^(-07), 8x10^(-06), 4x10^(-06), 1x10^(-07), 3x10^(-06), 6x10^(-06)
+
+ - Arithmetic Mean of LRs = 1.4
+
+ - Geometric Mean of LRs = 4x10^(-05)
+
+#### Geometric Mean -
+Pros -  a) Usually more conservative than AM
+        b) Indifferent to scales - LRs range from 0 to infinity, but most of the LR.same.Nor > 1, except a few, and most of the LR.different.Nor < 1, except a few. Smaller the value of LR.different.Nor (close to zero), stronger the evidence against prosecution model. Higher the value of LR.same.Nor, stronger the evidence for prosecution model. Both the LRs seem to have different scales.
+        c) Handles highly volatile data better than AM - like in our case, we see that 98% LR.different.Nor are between 0 and 1, but the remaining 2% LR.different.Nor range between 1 and 2x10^(6).
+
+Due to the above mentioned reasons, GM is computed for the computed LRs for all the random projections. In the end, logarithm with base 10 is taken and the results are compared.
+
+(log(LR1) + log(LR2) + log(LR3) + ... + log(LR100))/100 = log((LR1 x LR2 x LR3 x ... x LR100)^(1/100))
+
+Error rates - 
+
+1. Single RP
+ - False positive = 1.6%
+ - False negative = 0.6%
+
+2. 50 RPs
+ - False positive = 0.2%
+ - False negative = 0%
+
+3. 100 RPs - first iteration - 
+ - False positive = 0.2%
+ - False negative = 0.3% (only 1 LR < 1) = 1*100/320 = 0.3%
+
+4. 100 RPs - second iteration - 
+ - False positive = 0.2%
+ - False negative = 0%
+
+5. 500 RPs
+ - False positive = 0.2%
+ - False negative = 0.3%

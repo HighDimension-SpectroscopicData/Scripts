@@ -1,0 +1,459 @@
+---
+title: "01_Exploratory"
+author: "Anjali Gupta"
+date: "4/5/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reading Dyes Data
+
+
+```{r}
+mydata <- read.csv('dyes.csv', header=TRUE)
+
+table(mydata$color)
+table(mydata$color, mydata$sample)
+(unique(mydata$sample)) # 20 unique samples
+(unique(paste(mydata$color, mydata$sample))) # 30 unique combinations of color and sample, 10 for each color
+
+#Add another variable in the dataset
+#Unique combination of dye color and sample number
+id <- paste(mydata$color, mydata$sample, sep = "")
+name <- mydata$name
+mydata <- cbind("name" = mydata[,1], id, mydata[,2:ncol(mydata)])
+```
+
+## Plots
+
+
+```{r}
+pdf("FDObservation1.pdf", width = 8.27, height = 5.83)
+plot(1:3201, mydata[1,6:3206], type='l', xlab = "", ylab = "", main = "Single Functional Observation", col = "cyan", lwd = 2)
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+graphics.off()
+
+mydata_t <- t(mydata)
+
+#Separate out C, Y, M spectra
+mydataC <- mydata[mydata$color == "C",]
+mydataY <- mydata[mydata$color == "Y",]
+mydataM <- mydata[mydata$color == "M",]
+
+#Transpose the data
+mydataC_t <- t(mydataC)
+colnames(mydataC_t) <- mydataC_t[1,]
+mydataC_t <- mydataC_t[- c(1:5),]
+mydataC_t <- cbind(1:nrow(mydataC_t), mydataC_t)
+class(mydataC_t) <- "numeric"
+
+mydataY_t <- t(mydataY)
+colnames(mydataY_t) <- mydataY_t[1,]
+mydataY_t <- mydataY_t[- c(1:5),]
+mydataY_t <- cbind(1:nrow(mydataY_t), mydataY_t)
+class(mydataY_t) <- "numeric"
+
+mydataM_t <- t(mydataM)
+colnames(mydataM_t) <- mydataM_t[1,]
+mydataM_t <- mydataM_t[- c(1:5),]
+mydataM_t <- cbind(1:nrow(mydataM_t), mydataM_t)
+class(mydataM_t) <- "numeric"
+
+#Line plots
+pdf("cyan.pdf",width = 8.27, height = 5.83)
+plot(mydataC_t[,1:2], type='l',col="cyan", lwd = 1, main = "Raman Spectra: Cyan Inks", xlab = "", ylab = "") #check x- and y-axis labels with James
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+for(i in 3:ncol(mydataC_t)){
+  lines(mydataC_t[,1],mydataC_t[,i], col="cyan", lwd = 1)
+}
+graphics.off()
+#Identifying peculiar lines
+pdf("cyan_details_v2.pdf",width = 8.27, height = 5.83)
+plot(mydataC_t[,1:2], type='l',col="cyan", lwd = 1, main = "Raman Spectra: Cyan Inks", xlab = "", ylab = "") #check x- and y-axis labels with James
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+for(i in 3:ncol(mydataC_t)){
+  lines(mydataC_t[,1],mydataC_t[,i], col="cyan", lwd = 1)
+}
+#which(mydataC_t[1:10,] > 0.6, arr.ind=T) #C.440.4
+lines(mydataC_t[,1],mydataC_t[,45], col="cyan4", lwd = 2, lty = 2) #C.440.4
+#which(mydataC_t[1775,] > 1, arr.ind = T) #C.372.4
+#lines(mydataC_t[,1],mydataC_t[,20], col="cyan3", lwd = 2, lty = 3) #C.372.4
+lines(mydataC_t[,1],mydataC_t[,20], col="cadetblue4", lwd = 2, lty = 6) #C.372.4
+legend("topright", col = c("cyan4", "cadetblue4", "cyan"), lwd = c(2,2,1), lty = c(2,6,1), legend = c("C.440.4", "C.372.4", "Other Cyan Inks"), bty="n")
+graphics.off()
+
+#plot(mydataC_t[,1:2], type='l',col="cyan", lwd = 2, main = "Single Functional Observation", xlab = "Relative Wavenumber", ylab = "Normalised Intensity")
+
+pdf("FDObservationsC37_1.pdf", width = 8.27, height = 5.83)
+plot(mydataC_t[,1:2], type='l',col="cyan", lwd = 1, main = "Functional Observations - Ink C37", xlab = "", ylab = "")
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+for(i in 3:6){
+  lines(mydataC_t[,1],mydataC_t[,i], col="cyan", lwd = 1)
+}
+graphics.off()
+
+pdf("yellow_v2.pdf", width = 8.27, height = 5.83)
+plot(mydataY_t[,1:2], type='l',col="goldenrod1", lwd = 1, main = "Raman Spectra: Yellow Inks", xlab = "", ylab = "")
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+for(i in 3:ncol(mydataY_t)){
+  lines(mydataY_t[,1],mydataY_t[,i], col="goldenrod1", lwd = 1)
+}
+graphics.off()
+
+pdf("magenta_v2.pdf", width = 8.27, height = 5.83)
+plot(mydataM_t[,1:2], type='l',col="magenta", lwd = 1, main = "Raman Spectra: Magenta Inks", xlab = "", ylab = "")
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+for(i in 3:ncol(mydataM_t)){
+  lines(mydataM_t[,1],mydataM_t[,i], col="magenta", lwd = 1)
+}
+graphics.off()
+```
+
+```{r Refund.wave}
+# library(refund.wave)
+# 
+# data(gasoline)
+# gas.wnet1 <- wnet(gasoline$octane, xfuncs = gasoline$NIR[,1:256],
+# nfeatures= 20, min.scale = 0, alpha = 1)
+# gas.wpcr1 <- wcr(gasoline$octane, xfuncs = gasoline$NIR[,1:256], min.scale = 0,
+# nfeatures = 20, ncomp = 15)
+# gas.wpls1 <- wcr(gasoline$octane, xfuncs = gasoline$NIR[,1:256], min.scale = 0,
+# nfeatures = 20, ncomp = 15, method = "pls")
+# plot(gas.wnet1)
+# plot(gas.wpcr1)
+# plot(gas.wpls1)
+```
+
+## Create FDA objects and plot
+
+Plot functional data objects and plot them along with the observed data.
+
+```{r fda}
+library('fda')
+
+basisfd <- create.bspline.basis(rangeval=c(1, 3201), nbasis=NULL, norder=5, breaks=seq(1, 3201, 20))
+
+#Fitting Spline basis to the functional data
+for(i in 1:length(unique(id))){
+    y1 <- t(mydata[mydata$id == unique(id)[i],6:3206])
+
+    y1.fd <- Data2fd(y1, argvals = 1:3201, basisfd, fdnames=list("Wavenumber","rep","Absorbance"))
+
+    plot.fd(y1.fd, main=unique(id)[i], ylim = c(0,2))
+    for(k in 1:ncol(y1)){
+      lines(y1[,k], col="gray")
+    }
+}
+rm(y1.fd)
+rm(y1)
+
+##Single spectrum fitted using functional objects
+i <- 80
+y <- t(mydata[i,6:3206])
+y.fd <- Data2fd(y, argvals = 1:3201, basisfd, fdnames=list("Wavenumber","rep","Absorbance"))
+pdf(paste(name[i], "_fda_v2.pdf", sep=""), width = 8.27, height = 5.83)
+plot.fd(y.fd, main=name[i], ylim = c(0,2), lwd = 2, col = "red", xlab="",ylab="")
+title(ylab="Absorbance", line=2.5, cex.lab=1)
+title(xlab="Wavenumber", line=2.5, cex.lab=1)
+lines(y, col="black", lwd = 2, lty = 3)
+legend("topright", col = c("black", "red"), lwd = 2, legend = c("Original Spectrum", "Functional Data Object"), bty = "n", lty = c(3, 1))
+graphics.off()
+
+par(mfrow=c(2,2))
+i <- c(1, 10, 80, 147)
+for(k in 1:length(i)){
+y <- t(mydata[i[k],6:3206])
+y.fd <- Data2fd(y, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+plot.fd(y.fd, main=name[i[k]], ylim = c(0,2), lwd = 2, col = "red")
+lines(y, col="black", lwd = 2, lty = 3)
+legend("topright", col = c("black", "red"), lwd = 2, legend = c("Original Spectrum", "Functional Data Object"), bty = "n", lty = c(3, 1))
+}
+dev.off()
+
+```
+
+## Test 1 - Permutation Test for Functional Hypothesis - Functional T test
+
+This test computes t statistic at each point of the spectrum and the final test statistic is the maximum of the computed test statistics.
+
+```{r Test1}
+#Permutation Test of Functional Hypothesis - Functional T test
+pvals <- matrix(NA, nrow=length(unique(id)), ncol=length(unique(id)))
+rownames(pvals) <- (unique(id))
+colnames(pvals) <- unique(id)
+
+for(i in 1:(length(unique(id)) - 1)){#1:
+  y1 <- t(mydata[mydata$id == unique(id)[i],6:3206])
+  
+  y1.fd <- Data2fd(y1, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+  
+  for(j in (i+1):length(unique(id))){
+    y2 <- t(mydata[mydata$id == unique(id)[j],6:3206])
+    
+    #Test to check the p-value of T-test between replications from the same sample
+    # y1.temp <- y1[,1:3]
+    # y2.temp <- y1[,4:5]
+    # y1.temp.fd <- Data2fd(y1.temp, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+    # y2.temp.fd <- Data2fd(y2.temp, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+    # tperm.fd(y1.temp.fd, y2.temp.fd)
+
+    y2.fd <- Data2fd(y2, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+    
+    permtest <- tperm.fd(y1.fd, y2.fd)
+    
+    pvals[j,i] <- permtest$pval
+    
+   #  plot.fd(y1.fd, main=unique(id)[i], ylim = c(0,2))
+   #  for(k in 1:ncol(y1)){
+   #    lines(y1[,k], col="gray")
+   #  }
+   #  
+   # plot.fd(y2.fd, main=unique(id)[j], ylim = c(0,2))
+   #  for(k in 1:ncol(y2)){
+   #    lines(y2[,k], col="gray")
+   #  }
+  }
+}
+
+write.table(pvals, "PermutationTTest.txt", quote=FALSE, sep="\t", col.names = TRUE, row.names = TRUE, dec = ".")
+
+```
+
+## Test 2 - Compare the coefficients of the basis functions individually
+
+```{r Test2}
+# Comparing the coefficients of the basis functions - individually
+library('fdatest')
+data1 <- mydata[mydata$id == unique(id)[1], 6:3206]
+data2 <- mydata[mydata$id == unique(id)[2], 6:3206]
+test12 <- ITP2bspline(data1, data2, order = 5, nknots = length(seq(1, 3201, 20)))
+# Plotting the results of the ITP
+plot(test12) #,main='NASA data',xrange=c(1,365),xlab='Day'
+# Plotting the p-values heatmap
+ITPimage(test12)#,abscissa.range=c(0,12)
+# Selecting the significant components at 5% level
+which(test12$corrected.pval < 0.05)
+
+# Compare the results with fda - tperm.fd - Compares the objects at argvals = 101 by default i.e. 101 values from the whole spectra.
+# basisfd <- create.bspline.basis(rangeval=c(1, 3201), nbasis=NULL, norder=5, breaks=seq(1, 3201, 20))
+# data1_t <- t(data1)
+# data2_t <- t(data2)
+# data1.fd <- Data2fd(data1_t, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+# data2.fd <- Data2fd(data2_t, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+# test12_perm <- tperm.fd(data1.fd, data2.fd)
+
+```
+
+## Test 3 Trial - Hotelling T2
+
+```{r Test3}
+# FDA - Hotelling T2
+#install.packages("devtools")
+#library(devtools)
+#install_github("astamm/fdahotelling")
+library(fdahotelling)
+
+basisfd <- create.bspline.basis(rangeval=c(1, 3201), nbasis=NULL, norder=5, breaks=seq(1, 3201, 20))
+zero <- matrix(0, nrow = 5, ncol = 3201)
+zero_t <- t(zero)
+zero.fd <- Data2fd(zero_t, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+
+#test12_hot <- test_twosample(x = data1, y = data2, step_size = 0.01, mu = 0, B = 0)
+
+test12_hot.fd <- test_twosample(x = data1.fd, y = data2.fd, step_size = 0.01, mu = zero.fd, B = 0)
+
+# Running for all combinations
+pvals <- matrix(NA, nrow=length(unique(id)), ncol=length(unique(id)))
+rownames(pvals) <- (unique(id))
+colnames(pvals) <- unique(id)
+
+for(i in 1:(length(unique(id)) - 1)){#1:
+  y1 <- t(mydata[mydata$id == unique(id)[i],6:3206])
+  
+  y1.fd <- Data2fd(y1, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+  
+  for(j in (i+1):length(unique(id))){
+    y2 <- t(mydata[mydata$id == unique(id)[j],6:3206])
+    
+    #Test to check the p-value of T-test between replications from the same sample
+    # y1.temp <- y1[,1:3]
+    # y2.temp <- y1[,4:5]
+  #  y1.temp <- y1[,1:2]
+  #  y2.temp <- y1[,3:4]
+    # y1.temp.fd <- Data2fd(y1.temp, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+    # y2.temp.fd <- Data2fd(y2.temp, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+    # test_hot.fd <- test_twosample(x = y1.temp.fd, y = y2.temp.fd, step_size = 0.01, mu = zero.fd, B = 100)
+    # pvals[i,i] <- test_hot.fd$pValue
+    
+    y2.fd <- Data2fd(y2, argvals = 1:3201, basisfd, fdnames=list("Wave Number","rep","Normalized Intensity"))
+    
+    #test_hot.fd <- test_twosample(x = y1.fd, y = y2.fd, step_size = 0.01, mu = zero.fd, B = 0) #Parametric Test
+    test_hot.fd <- test_twosample(x = y1.fd, y = y2.fd, step_size = 0.01, mu = zero.fd, B = 1000) #Permutation Test
+    
+    pvals[j,i] <- test_hot.fd$pValue
+    
+
+  }
+}
+
+write.table(pvals, "HotellingT2Test-NonParametric.txt", quote=FALSE, sep="\t", col.names = TRUE, row.names = TRUE, dec = ".")
+```
+
+## Example from 'fdahotelling' package - fd objects
+
+```{R}
+# An fd object is created from the transposed matrix 
+# in the sense that it expects observations to be stored
+# in columns and grid points in rows.
+lower_ind <- which(aneurisk$variable == "radius" & aneurisk$group == "low")
+upper_ind <- which(aneurisk$variable == "radius" & aneurisk$group == "up")
+arc_length_lower <- aneurisk$abscissa[[lower_ind]]
+arc_length_upper <- aneurisk$abscissa[[upper_ind]]
+# Both datasets must be defined on the same grid
+all(arc_length_upper == arc_length_lower)
+#> [1] TRUE
+arc_length <- arc_length_upper
+# Effective transformation to fd objects
+data_lower <- aneurisk$data[[lower_ind]]
+fd_lower <- fda::Data2fd(arc_length, t(data_lower))
+data_upper <- aneurisk$data[[upper_ind]]
+fd_upper <- fda::Data2fd(arc_length, t(data_upper))
+# Requirement: the differences between the mean assumed 
+# in the null hypothesis must be converted in fd format 
+# as well.
+fd_delta <- fda::Data2fd(arc_length, matrix(0, length(arc_length), dim(data_upper)[1]))
+
+set.seed(1234)
+test_twosample(
+  x = aneurisk$data[[lower_ind]], 
+  y = aneurisk$data[[upper_ind]], 
+  step_size = 0.01, 
+  B = 100L
+)
+#  - P-value resolution: 0.01
+#  - Computing approximate p-value using 100 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling    385.   0.96
+
+set.seed(1234)
+test_twosample(
+  x = fd_lower, 
+  y = fd_upper, 
+  mu = fd_delta,
+  step_size = 0.01, 
+  B = 100L
+)
+#  - P-value resolution: 0.01
+#  - Computing approximate p-value using 100 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling    526.   0.71
+  
+set.seed(1234)
+test_twosample(
+  x = t(fd_lower$coefs), 
+  y = t(fd_upper$coefs), 
+  step_size = 0.01, 
+  B = 100L
+)
+#  - P-value resolution: 0.01
+#  - Computing approximate p-value using 100 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling    404.   0.94
+
+## Derivates --
+set.seed(1234)
+lower_ind <- which(aneurisk$variable == "radius_der" & aneurisk$group == "low")
+upper_ind <- which(aneurisk$variable == "radius_der" & aneurisk$group == "up")
+test_twosample(
+  x = aneurisk$data[[lower_ind]], 
+  y = aneurisk$data[[upper_ind]], 
+  step_size = 0.01, 
+  B = 100L
+)
+#  - P-value resolution: 0.01
+#  - Computing approximate p-value using 100 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling   5350.   0.02
+#  - P-value resolution: 0.001
+#  - Computing approximate p-value using 1000 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling   5350.  0.011
+arc_length_lower <- aneurisk$abscissa[[lower_ind]]
+arc_length_upper <- aneurisk$abscissa[[upper_ind]]
+# Both datasets must be defined on the same grid
+all(arc_length_upper == arc_length_lower)
+#> [1] TRUE
+arc_length <- arc_length_upper
+# Effective transformation to fd objects
+data_lower <- aneurisk$data[[lower_ind]]
+fd_lower <- fda::Data2fd(arc_length, t(data_lower))
+data_upper <- aneurisk$data[[upper_ind]]
+fd_upper <- fda::Data2fd(arc_length, t(data_upper))
+set.seed(1234)
+test_twosample(
+  x = fd_lower, 
+  y = fd_upper, 
+  mu = fd_delta,
+  step_size = 0.01, 
+  B = 100L
+)
+#  - P-value resolution: 0.01
+#  - Computing approximate p-value using 100 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling   7097.   0.02
+#  - P-value resolution: 0.001
+#  - Computing approximate p-value using 1000 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling   7097.  0.015
+set.seed(1234)
+test_twosample(
+  x = t(fd_lower$coefs), 
+  y = t(fd_upper$coefs), 
+  step_size = 0.01, 
+  B = 100L
+)
+#  - P-value resolution: 0.01
+#  - Computing approximate p-value using 100 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling   4995.   0.02
+#  - P-value resolution: 0.001
+#  - Computing approximate p-value using 1000 random permutations.
+#  - P-value will not drop below 7.91072860244862e-15 in average.
+# # A tibble: 1 x 3
+#   statName  statVal pValue
+#   <chr>       <dbl>  <dbl>
+# 1 Hotelling   4995.   0.01
+```
